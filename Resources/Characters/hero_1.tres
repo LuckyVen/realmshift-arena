@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/HeroData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="LYRA"
+Title="Verdant Ranger"
+Ability="ROOTWAKE"
+Description="Root nearby foes and move faster for five seconds."
+Hair=5
+Outfit=1
+Accessory=4

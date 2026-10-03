@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/UpgradeData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+Id="relic_02"
+DisplayName="LONG STRIDE"
+Description="Dash travels 25% farther."
+Effect="dashlength"
+Amount=0.25
+Weapon=-1
+Element=-1
+MaxRank=3

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/HeroData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="BRANN"
+Title="Rune Warden"
+Ability="AEGIS"
+Description="A strong shield and a damaging defensive pulse."
+Hair=9
+Outfit=3
+Accessory=3

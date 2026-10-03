@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/UpgradeData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+Id="relic_66"
+DisplayName="RETURNING ECHO"
+Description="Ranged bolts return toward you after flight."
+Effect="return"
+Amount=1
+Weapon=-1
+Element=4
+MaxRank=1

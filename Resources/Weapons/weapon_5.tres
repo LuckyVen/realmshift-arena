@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="CRYSTAL ORBS"
+Description="Orbiting crystals deal contact damage and launch together. Secondary: shield burst."
+Kind=5
+Damage=15
+Interval=0.45
+Speed=270
+Range=320
+AbilityCooldown=8
+UnlockBoss=1

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="SPELLBOOK"
+Description="A pulse field plus a missile fan. Secondary: a protective rune sanctuary."
+Kind=6
+Damage=20
+Interval=0.65
+Speed=220
+Range=300
+AbilityCooldown=10
+UnlockBoss=1

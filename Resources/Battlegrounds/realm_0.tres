@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RealmData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/RealmData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="GREENWARD BASIN"
+Subtitle="The old forest remembers."
+BossName="The Rootbound Colossus"
+Lore="The first engine was buried under living roots. Every leaf still carries a trace of its song."
+ShiftText="Roots split. Ancient runes awaken beneath the earth."

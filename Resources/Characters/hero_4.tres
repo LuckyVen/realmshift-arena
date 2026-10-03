@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/HeroData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="EIRA"
+Title="Frost Traveler"
+Ability="WINTER STILL"
+Description="Freeze nearby enemies and gain brief immunity."
+Hair=2
+Outfit=7
+Accessory=2

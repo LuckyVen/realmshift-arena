@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="ARCANE WAND"
+Description="Rapid elemental bolts. Secondary: a ring of spells."
+Kind=0
+Damage=14
+Interval=0.24
+Speed=280
+Range=340
+AbilityCooldown=6
+UnlockBoss=-1

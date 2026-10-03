@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="HeroData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/HeroData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="ASTER"
+Title="Realm Wanderer"
+Ability="REJUVENATION"
+Description="Restore health and wrap yourself in a protective shield."
+Hair=1
+Outfit=0
+Accessory=1

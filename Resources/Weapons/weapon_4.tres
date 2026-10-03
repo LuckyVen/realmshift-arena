@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="CHAKRAM"
+Description="A returning ring that cuts through a crowd. Secondary: six returning rings."
+Kind=4
+Damage=18
+Interval=0.6
+Speed=250
+Range=300
+AbilityCooldown=8
+UnlockBoss=0

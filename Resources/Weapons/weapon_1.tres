@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="LONGBOW"
+Description="Hold to charge; release to fire piercing arrows. Secondary: arrow rain."
+Kind=1
+Damage=32
+Interval=0.32
+Speed=420
+Range=450
+AbilityCooldown=8
+UnlockBoss=-1

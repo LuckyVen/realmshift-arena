@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/EnemyData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="Thorn Hound"
+Kind=2
+Realm=0
+Health=32
+Speed=43
+Damage=12
+Experience=6

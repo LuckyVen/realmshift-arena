@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/UpgradeData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+Id="relic_63"
+DisplayName="EVERGREEN"
+Description="Regenerate 1.5 health each second."
+Effect="regen"
+Amount=1.5
+Weapon=-1
+Element=3
+MaxRank=3

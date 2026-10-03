@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/EnemyData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="Frost Adept"
+Kind=1
+Realm=2
+Health=28
+Speed=38
+Damage=10
+Experience=5

@@ -1,0 +1,17 @@
+[remap]
+
+importer="font_data_bmfont"
+type="FontFile"
+uid="uid://ckjefm3pr1qn5"
+path="res://.godot/imported/realm_font.fnt-305e49161e8ee8ce0e7e2a31851ada22.fontdata"
+
+[deps]
+
+source_file="res://Assets/Art/UI/realm_font.fnt"
+dest_files=["res://.godot/imported/realm_font.fnt-305e49161e8ee8ce0e7e2a31851ada22.fontdata"]
+
+[params]
+
+fallbacks=[]
+compress=true
+scaling_mode=2

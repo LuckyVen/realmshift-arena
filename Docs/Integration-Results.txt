@@ -1,0 +1,38 @@
+Godot 4.5.1 .NET / exported Linux x64 package
+PASS / eight weapon resources
+PASS / 28 enemy variants
+PASS / 50+ upgrade resources
+PASS / eight heroes
+PASS / all menu pages construct
+PASS / save roundtrip
+PASS / projectiles damage and defeat enemies
+PASS / projectile pool bounded
+PASS / pause freezes enemy simulation
+PASS / XP freezes the run for upgrade choice
+PASS / three upgrade choices
+PASS / scheduled guardian 0
+PASS / boss phase transition
+PASS / boss victory triggers world shift
+PASS / world geometry and portal transition
+PASS / portal advances campaign
+PASS / scheduled guardian 1
+PASS / boss phase transition
+PASS / boss victory triggers world shift
+PASS / world geometry and portal transition
+PASS / portal advances campaign
+PASS / scheduled guardian 2
+PASS / boss phase transition
+PASS / boss victory triggers world shift
+PASS / world geometry and portal transition
+PASS / portal advances campaign
+PASS / scheduled guardian 3
+PASS / boss phase transition
+PASS / boss victory triggers world shift
+PASS / level 40 victory unlocks endless
+PASS / endless starts beyond campaign
+PASS / eight weapon classes execute
+PASS / return to menu clears run
+SMOKE PASS / 33 integration checks
+
+Windows x64 export: succeeded with no export errors.
+Native Windows runtime test: not performed in this environment.

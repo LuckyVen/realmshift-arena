@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RealmData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/RealmData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="EMBERGLASS WASTES"
+Subtitle="A furnace beneath the world."
+BossName="The Forge Tyrant"
+Lore="Glass deserts were once the workshops of the realmwrights. Their furnaces still burn without fuel."
+ShiftText="The furnace falls silent. Steam rises; the realm freezes."

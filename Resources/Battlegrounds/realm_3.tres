@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="RealmData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/RealmData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="ASTRAL RUPTURE"
+Subtitle="Four worlds. One final fracture."
+BossName="The Realmbreaker"
+Lore="The catastrophe never ended. At its heart, an unfinished engine is trying to assemble a world that cannot exist."
+ShiftText="The broken engine yields. The four realms breathe again."

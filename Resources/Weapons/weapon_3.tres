@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="ARCANE STAFF"
+Description="Heavy detonating spells. Secondary: a persistent elemental zone."
+Kind=3
+Damage=42
+Interval=0.72
+Speed=190
+Range=330
+AbilityCooldown=9
+UnlockBoss=0

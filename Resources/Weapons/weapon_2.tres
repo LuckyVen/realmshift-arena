@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+[ext_resource type="Script" path="res://Scripts/Data/WeaponData.cs" id="1"]
+[resource]
+script=ExtResource("1")
+DisplayName="RUNE BLADE"
+Description="Wide close-range slashes. Secondary: a full-circle rune strike."
+Kind=2
+Damage=27
+Interval=0.34
+Speed=0
+Range=60
+AbilityCooldown=5
+UnlockBoss=-1
