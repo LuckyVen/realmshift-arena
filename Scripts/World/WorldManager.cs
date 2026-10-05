@@ -13,6 +13,7 @@ public partial class WorldManager : Node2D
     private readonly List<(Vector2 P,float R)> _blocked=new();
     private Node2D _props=null!;
     private Node2D _collision=null!;
+    public GroundDressing Dressing {get;private set;}=null!;
     private float _time;
     public float Shift {get;set;}
     public int NextRealm {get;set;}
@@ -23,8 +24,9 @@ public partial class WorldManager : Node2D
     public void Build(int realm)
     {
         Realm=Mathf.PosMod(realm,4);PortalActive=false;Shift=0;_blocked.Clear();Chests.Clear();Shrines.Clear();
-        if(_props!=null){RemoveChild(_props);_props.QueueFree();RemoveChild(_collision);_collision.QueueFree();}
-        _props=new Node2D{Name="Scenery",ZIndex=10,YSortEnabled=true};AddChild(_props);
+        if(_props!=null){_props.GetParent().RemoveChild(_props);_props.QueueFree();RemoveChild(_collision);_collision.QueueFree();}
+        if(Dressing!=null){RemoveChild(Dressing);Dressing.QueueFree();}
+        _props=new Node2D{Name="Scenery",ZIndex=0,YSortEnabled=true};GameManager.Instance.Depth.AddChild(_props);
         _collision=new Node2D{Name="EnvironmentCollisions"};AddChild(_collision);
         AddWall(new Rect2(-32,-32,Size.X+64,48));AddWall(new Rect2(-32,Size.Y-16,Size.X+64,48));AddWall(new Rect2(-32,0,48,Size.Y));AddWall(new Rect2(Size.X-16,0,48,Size.Y));
         float river=RiverX;
@@ -35,19 +37,19 @@ public partial class WorldManager : Node2D
             var p=new Vector2(rng.RandfRange(64,Size.X-64),rng.RandfRange(72,Size.Y-64));
             if(!CanStand(p,24)||p.DistanceTo(Spawn)<180||OnPath(p))continue;
             int kind=i%7;string name=kind<3?(Realm==1||Realm==3?"crystal":"tree"):kind==3?"crystal":kind==4?"rock":"shrub";
-            var tex=Art.Get($"Props/{name}_{Realm}.png");var sprite=new Sprite2D{Texture=tex,Position=p,Offset=new Vector2(0,-tex.GetHeight()/2f+8)};_props.AddChild(sprite);
+            var tex=Art.Get($"Props/{name}_{Realm}.png");var sprite=new WorldProp{Texture=tex,Position=p,Offset=new Vector2(-tex.GetWidth()/2f,-tex.GetHeight()+8),HasCanopy=name=="tree"};_props.AddChild(sprite);
             if(kind<5)AddObstacle(p,kind<3?11:kind==3?6:10);
         }
         Vector2[] landmarks={new(500,420),new(1870,420),new(560,1650),new(2150,1660),new(2110,1040),new(1450,1830)};
         foreach(var p in landmarks)
         {
-            var spr=new Sprite2D{Texture=Art.Get($"Props/shrine_{Realm}.png"),Position=p,Offset=new Vector2(0,-24)};_props.AddChild(spr);AddObstacle(p,12);Shrines.Add(p+new Vector2(0,28));
+            var spr=new WorldProp{Texture=Art.Get($"Props/shrine_{Realm}.png"),Position=p,Offset=new Vector2(-24,-56)};_props.AddChild(spr);AddObstacle(p,12);Shrines.Add(p+new Vector2(0,28));
             for(int x=-4;x<=4;x++)if(x!=0&&x!=2)PlaceWall(p+new Vector2(x*16,-62));
             for(int y=-2;y<=2;y++)if(y!=0)PlaceWall(p+new Vector2(-64,y*16-32));
         }
         for(int i=0;i<9;i++)
         {Vector2 p=landmarks[i%landmarks.Length]+new Vector2((i%3-1)*60,66);Chests.Add(p);}
-        Chests.Add(Spawn+new Vector2(90,45));QueueRedraw();
+        Chests.Add(Spawn+new Vector2(90,45));Dressing=new GroundDressing{Name="GroundDressing"};AddChild(Dressing);Dressing.Build(this,_props);QueueRedraw();
     }
     public float RiverX=>Size.X*new[]{.34f,.57f,.26f,.45f}[Realm];
     private static readonly float[] BridgeYs={448,1056,1664};
@@ -73,12 +75,13 @@ public partial class WorldManager : Node2D
     private void AddObstacle(Vector2 p,float r)
     {_blocked.Add((p,r));var b=new StaticBody2D{Position=p,CollisionLayer=4,CollisionMask=0};b.AddChild(new CollisionShape2D{Shape=new CircleShape2D{Radius=r}});_collision.AddChild(b);}
     private void PlaceWall(Vector2 p)
-    {_props.AddChild(new Sprite2D{Texture=Art.Get($"Props/wall_{Realm}.png"),Position=p,Offset=new Vector2(0,-8)});AddObstacle(p,7);}
+    {_props.AddChild(new WorldProp{Texture=Art.Get($"Props/wall_{Realm}.png"),Position=p,Offset=new Vector2(-8,-24)});AddObstacle(p,7);}
     public override void _Process(double delta)
     { _time+=(float)delta;if(_props!=null){_props.Modulate=new Color(1+Shift*.35f,1-Shift*.12f,1+Shift*.25f);_props.Position=new Vector2(Mathf.Sin(_time*21)*Shift*1.5f,-Shift*(NextRealm==3?8:1));}QueueRedraw();}
     private static int Hash(int x,int y)=>unchecked((x*73856093)^(y*19349663))&0x7fffffff;
     private int Ground(int x,int y)
     {Vector2 p=new(x*16+8,y*16+8);if(p.X>RiverX&&p.X<RiverX+80)return OnBridge(p.Y)?1:2;if(OnPath(p))return 1;return 0;}
+    public int GroundKindAt(Vector2 p)=>p.X<0||p.Y<0||p.X>=Size.X||p.Y>=Size.Y?-1:Ground(Mathf.FloorToInt(p.X/16),Mathf.FloorToInt(p.Y/16));
     public override void _Draw()
     {
         var game=GameManager.Instance;if(game==null)return;Vector2 center=game.Camera?.GlobalPosition??Spawn;
@@ -90,6 +93,14 @@ public partial class WorldManager : Node2D
             int kind=Ground(x,y),variant=(Hash(x,y)+((kind==2)?(int)(_time*3):0))%16;var dst=new Rect2(x*16,y*16,16,16);var src=new Rect2(variant*16,kind*16,16,16);
             var groundTex=Endless&&Hash(x/6,y/6)%7<3?Art.Get($"Tilesets/realm_{Hash(x/6+31,y/6)%4}.png"):tex;
             DrawTextureRectRegion(groundTex,dst,src);
+            if(kind==0)
+            {
+                Color edge=new(Palette.Realm(Realm).Darkened(.38f),.5f);
+                if(Ground(x+1,y)==1)DrawRect(new Rect2(x*16+14,y*16+Hash(x,y)%5,2,9),edge);
+                if(Ground(x-1,y)==1)DrawRect(new Rect2(x*16,y*16+Hash(x+1,y)%5,2,9),edge);
+                if(Ground(x,y+1)==1)DrawRect(new Rect2(x*16+Hash(x,y+1)%5,y*16+14,9,2),edge);
+                if(Ground(x,y-1)==1)DrawRect(new Rect2(x*16+Hash(x+1,y+1)%5,y*16,9,2),edge);
+            }
             if(next!=null){float radial=(new Vector2(x*16,y*16)-Spawn).Length()/1800f;float reveal=Mathf.Clamp(Shift*1.8f-radial,0,1);DrawTextureRectRegion(next,dst,src,new Color(1,1,1,reveal));}
             if(kind==0&&Hash(x+41,y)%21==0){Color c=Palette.Realm(Realm).Darkened(.12f);DrawRect(new Rect2(x*16+3,y*16+8+Mathf.Sin(_time*2+x)*1,1,4),c);DrawRect(new Rect2(x*16+5,y*16+10,1,3),c);}
         }

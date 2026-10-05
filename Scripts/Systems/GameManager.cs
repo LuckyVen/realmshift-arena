@@ -7,6 +7,7 @@ public partial class GameManager : Node2D
     public bool Running=>(State is RunState.Combat or RunState.Tutorial or RunState.Rest or RunState.Portal)&&_stop<=0;
     public SettingsData Settings=>SaveManager.Data.Settings;
     public WorldManager World {get;private set;}=null!;
+    public Node2D Depth {get;private set;}=null!;
     public CameraController Camera {get;private set;}=null!;
     public PlayerController? Player {get;private set;}
     public EnemyDirector Enemies {get;private set;}=null!;
@@ -26,28 +27,31 @@ public partial class GameManager : Node2D
     private bool _ended,_endless;
     private int _tutorialStep;
     private bool _automation;
+    private bool _quitting;
     public override void _Ready()
     {
         Instance=this;Catalog.Load();SaveManager.Load();InputBindings.Setup();
+        GetTree().AutoAcceptQuit=false;GetWindow().CloseRequested+=Quit;
+        Depth=new Node2D{Name="WorldDepth",YSortEnabled=true};AddChild(Depth);
         World=new WorldManager{Name="World"};AddChild(World);World.Build(0);
         Camera=new CameraController{Name="Camera",Position=World.Spawn};AddChild(Camera);
         Enemies=new EnemyDirector();AddChild(Enemies);Projectiles=new ProjectilePool{Name="Projectiles"};AddChild(Projectiles);
         Weapons=new CombatSystem{Name="CombatZones"};AddChild(Weapons);Pickups=new PickupManager{Name="Pickups"};AddChild(Pickups);Effects=new EffectsManager{Name="Effects"};AddChild(Effects);
         Audio=new AudioManager{Name="Audio"};AddChild(Audio);UI=new UIManager{Name="Interface"};AddChild(UI);
         ApplySettings();Audio.Music(5);UI.ShowIntro();
-        var args=OS.GetCmdlineUserArgs();_automation=System.Array.Exists(args,x=>x.StartsWith("--smoke")||x.StartsWith("--capture="));
-        if(System.Array.Exists(args,x=>x.StartsWith("--smoke"))){CallDeferred(nameof(StartSmoke));}else if(System.Array.Exists(args,x=>x.StartsWith("--capture="))){CallDeferred(nameof(StartCapture));}
+        var args=OS.GetCmdlineUserArgs();_automation=System.Array.Exists(args,x=>x.StartsWith("--smoke")||x.StartsWith("--capture=")||x.StartsWith("--polish-"));
+        if(System.Array.Exists(args,x=>x.StartsWith("--smoke"))){CallDeferred(nameof(StartSmoke));}else if(System.Array.Exists(args,x=>x.StartsWith("--capture="))){CallDeferred(nameof(StartCapture));}else if(System.Array.Exists(args,x=>x.StartsWith("--polish-capture="))){CallDeferred(nameof(StartPolishCapture));}
     }
     public void ApplySettings()
     {
         if(DisplayServer.GetName()!="headless")
-        {DisplayServer.WindowSetMode(Settings.Fullscreen?DisplayServer.WindowMode.Fullscreen:DisplayServer.WindowMode.Windowed);DisplayServer.WindowSetVsyncMode(Settings.Vsync?DisplayServer.VSyncMode.Enabled:DisplayServer.VSyncMode.Disabled);if(!Settings.Fullscreen)DisplayServer.WindowSetSize(new Vector2I(640,360)*(Settings.Resolution+1));}
+        {GetWindow().Mode=Settings.Fullscreen?Window.ModeEnum.Fullscreen:Window.ModeEnum.Windowed;DisplayServer.WindowSetVsyncMode(Settings.Vsync?DisplayServer.VSyncMode.Enabled:DisplayServer.VSyncMode.Disabled);if(!Settings.Fullscreen)GetWindow().Size=new Vector2I(640,360)*(Settings.Resolution+1);}
         Audio.ApplyVolumes();
     }
     public void StartRun(int weapon,int second,Element element,bool endless=false)
     {
         ClearRun();_endless=endless;_ended=false;World.Endless=endless;World.Build(endless?0:0);Experience=new();Upgrades=new();Level=new();Shifts=new();Score=Combo=Kills=RunShards=0;ComboTimer=RunTime=0;
-        Player=GD.Load<PackedScene>("res://Scenes/Characters/Player.tscn").Instantiate<PlayerController>();AddChild(Player);Player.Position=World.Spawn;Player.Stats.SecondSlot=SaveManager.Data.Bosses.Count>0;
+        Player=GD.Load<PackedScene>("res://Scenes/Characters/Player.tscn").Instantiate<PlayerController>();Depth.AddChild(Player);Player.Position=World.Spawn;Player.Stats.SecondSlot=SaveManager.Data.Bosses.Count>0;
         Player.Weapons.Equip(0,weapon,element,0);Player.Weapons.Equip(1,second,(Element)(((int)element+2)%5),0);Camera.Target=Player;Camera.Focus=null;Camera.Position=World.Spawn;
         UI.Close();UI.ShowHud(true);SaveManager.Data.Runs++;
         if(!SaveManager.Data.Tutorial&&!endless&&!_automation){State=RunState.Tutorial;_tutorialStep=0;_tutorialTime=0;UI.Announce("WELCOME TO THE SHATTERED REALM","Move with WASD / left stick. Cross the courtyard.",5);}
@@ -89,12 +93,22 @@ public partial class GameManager : Node2D
     private void ClearRun()
     {
         UI.Close();UI.ShowHud(false);Enemies.Clear();Projectiles.Clear();Weapons.Clear();Pickups.Clear();Effects.Clear();
-        if(Player!=null){RemoveChild(Player);Player.QueueFree();Player=null;}Camera.Target=null;
+        if(Player!=null){Depth.RemoveChild(Player);Player.QueueFree();Player=null;}Camera.Target=null;
     }
     public void Restart()=>StartRun(UI.StartWeapon,UI.SecondWeapon,UI.StartElement,_endless);
-    public override void _ExitTree(){Art.Release();Catalog.Release();}
-    public override void _Notification(int what){if(what==NotificationWMCloseRequest){SaveManager.Save();GetTree().Quit();}}
+    public async void Quit()
+    {
+        if(_quitting)return;_quitting=true;SaveManager.Save();State=RunState.Menu;Audio.StopAll();
+        // Let the audio mixer consume its stop commands before native resources are released.
+        // This also works when an integration run advances simulation faster than wall time.
+        ulong deadline=Time.GetTicksMsec()+120;
+        while(Time.GetTicksMsec()<deadline)await ToSignal(GetTree(),SceneTree.SignalName.ProcessFrame);
+        GetTree().Quit();
+    }
+    public override void _ExitTree(){UIFactory.Release();Art.Release();Catalog.Release();}
+    public override void _Notification(int what){if(what==NotificationWMCloseRequest&&Audio!=null)Quit();}
     private void StartCapture(){AddChild(new VisualCapture{Name="VisualQA"});}
+    private void StartPolishCapture(){AddChild(new PolishCapture{Name="PolishQA"});}
     private void StartSmoke()
     {AddChild(new SmokeTest{Name="SmokeTests"});}
 }

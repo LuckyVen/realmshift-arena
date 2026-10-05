@@ -10,24 +10,25 @@ public partial class BossBase : EnemyBase
     public void SpawnBoss(int realm,Vector2 position,int level)
     {
         Realm=realm;Spawn(Catalog.Enemies[realm*6+4],position,level);Scale=Vector2.One;Radius=32;
-        MaxHealth=1100+realm*750+Mathf.Max(0,level-40)*80;Health=MaxHealth;Phase=1;Cooldown=2.5f;ZIndex=16;
+        MaxHealth=BossTuning.Health(realm,level);Health=MaxHealth;Phase=1;Cooldown=2.5f;ZIndex=0;_pattern=0;
     }
     public override void _PhysicsProcess(double delta)
     {
         var g=GameManager.Instance;if(!g.Running||!Active)return;
         float dt=(float)delta;Age+=dt;Flash=Mathf.Max(0,Flash-dt*5);Slow=Mathf.Max(0,Slow-dt);Burn=Mathf.Max(0,Burn-dt);_phaseFlash=Mathf.Max(0,_phaseFlash-dt);Cooldown-=dt;
         int newPhase=Health<MaxHealth*.3f?3:Health<MaxHealth*.65f?2:1;
-        if(newPhase>Phase){Phase=newPhase;_phaseFlash=1;Cooldown=1.1f;g.UI.Announce("PHASE "+Phase,"The guardian changes its rhythm.",2);g.Camera.Shake(4);g.Audio.Play("boss");}
+        if(newPhase>Phase){Phase=newPhase;_phaseFlash=1;Cooldown=1.1f;g.UI.Announce("PHASE "+Phase,"The guardian changes its rhythm.",2);g.Camera.Shake(4);g.Audio.Play("boss");g.Effects.Sigil(Position,75,Realm==0?Element.Nature:Realm==1?Element.Fire:Realm==2?Element.Frost:Element.Arcane,.65f);}
         var player=g.Player!;Vector2 dir=g.World.PathDirection(Position,player.Position);float dist=Position.DistanceTo(player.Position);
-        float speed=Realm==2?22:Realm==1?18:26;Velocity=dir*(dist>115?speed:0)*(Slow>0?.7f:1);MoveAndSlide();
-        if(dist<42)player.TakeDamage(18+Realm*4,Position);
-        if(Cooldown<=0){AttackPattern();_pattern++;Cooldown=(Realm==3?2.1f:2.7f)/(1+(Phase-1)*.18f);}
+        var tuning=BossTuning.ForRealm(Realm);Velocity=dir*(dist>115?tuning.Speed:0)*(Slow>0?.7f:1);MoveAndSlide();
+        if(dist<42)player.TakeDamage((18+Realm*4)*tuning.DamageMultiplier,Position);
+        if(Cooldown<=0){AttackPattern();_pattern++;Cooldown=BossTuning.Interval(Realm,Phase);}
         QueueRedraw();
     }
     private void AttackPattern()
     {
         var g=GameManager.Instance;var p=g.Player!.Position;Element element=Realm==0?Element.Nature:Realm==1?Element.Fire:Realm==2?Element.Frost:Element.Arcane;
-        float damage=15+Realm*3;
+        float damage=(15+Realm*3)*BossTuning.ForRealm(Realm).DamageMultiplier*(1+(Phase-1)*.05f);
+        g.Effects.Cast(Position-new Vector2(0,28),element,(p-Position).Normalized(),true);g.Effects.Telegraph(Position,element,38,.45f);
         switch(Realm)
         {
             case 0:
@@ -63,7 +64,7 @@ public partial class BossBase : EnemyBase
         g.Audio.Play("cast",.65f);
     }
     public override void Damage(float amount,Element element,bool apply=true,bool critical=false)
-    {base.Damage(amount,element,apply,critical);}
+    {base.Damage(amount*BossTuning.ForRealm(Realm).DamageTaken,element,apply,critical);}
     public override void _Draw()
     {
         if(!Active)return;DrawTextureRectRegion(Art.Get($"Bosses/boss_{Realm}.png"),new Rect2(-48,-82,96,96),new Rect2((int)(Age*5)%4*96,0,96,96),Flash>0?new Color(1.6f,1.6f,1.6f):Colors.White);

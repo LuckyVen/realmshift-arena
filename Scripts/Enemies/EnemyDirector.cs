@@ -10,13 +10,13 @@ public partial class EnemyDirector : Node2D
     private readonly Stack<EnemyBase> _pool=new();
     private readonly Dictionary<Vector2I,List<EnemyBase>> _grid=new();
     public override void _Ready()
-    {Name="Enemies";YSortEnabled=true;for(int i=0;i<140;i++){var enemy=new EnemyBase();AddChild(enemy);_pool.Push(enemy);}}
+    {Name="Enemies";for(int i=0;i<140;i++){var enemy=new EnemyBase();GameManager.Instance.Depth.AddChild(enemy);_pool.Push(enemy);}}
     public void Spawn(int index,Vector2 position,bool elite=false,bool miniboss=false,bool summoned=false)
     {
         if(_pool.Count==0)return;var g=GameManager.Instance;var enemy=_pool.Pop();enemy.Spawn(Catalog.Enemies[index],g.World.SafePoint(position),g.Level.Level,elite,miniboss);Active.Add(enemy);
     }
     public BossBase SpawnBoss(int realm)
-    {Boss=new BossBase();AddChild(Boss);Boss.SpawnBoss(realm,GameManager.Instance.World.SafePoint(GameManager.Instance.Player!.Position+new Vector2(0,-155)),GameManager.Instance.Level.Level);Active.Add(Boss);return Boss;}
+    {Boss=new BossBase();GameManager.Instance.Depth.AddChild(Boss);Boss.SpawnBoss(realm,GameManager.Instance.World.SafePoint(GameManager.Instance.Player!.Position+new Vector2(0,-155)),GameManager.Instance.Level.Level);Active.Add(Boss);return Boss;}
     public override void _PhysicsProcess(double delta)
     {
         _grid.Clear();foreach(var e in Active)

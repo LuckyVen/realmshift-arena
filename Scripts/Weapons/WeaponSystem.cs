@@ -14,6 +14,7 @@ public partial class WeaponSystem : Node2D
     public WeaponInstance Current=>Slots[Slot];
     public int Slot {get;private set;}
     public float AbilityTimer {get;private set;}
+    public float AbilityDuration {get;private set;}
     public float Charge {get;private set;}
     private float _cooldown,_passive;
     private GameManager G=>GameManager.Instance;
@@ -25,7 +26,7 @@ public partial class WeaponSystem : Node2D
     {
         if(!G.Running)return;float dt=(float)delta;_cooldown=Mathf.Max(0,_cooldown-dt);AbilityTimer=Mathf.Max(0,AbilityTimer-dt);_passive-=dt;
         if(Current.Data.Kind==WeaponKind.Spellbook&&_passive<=0)
-        {_passive=1.1f/Player.Stats.AttackRate;G.Weapons.Area(Player.Position,72*Player.Stats.Area,Damage*.65f,Current.Element);G.Effects.Ring(Player.Position,72*Player.Stats.Area,Palette.ElementColor(Current.Element),.4f);}
+        {_passive=1.1f/Player.Stats.AttackRate;G.Weapons.Area(Player.Position,72*Player.Stats.Area,Damage*.65f,Current.Element);G.Effects.Sigil(Player.Position,72*Player.Stats.Area,Current.Element,.4f);}
         if(Current.Data.Kind==WeaponKind.Orbs&&_passive<=0)
         {
             _passive=.24f;for(int i=0;i<Player.Stats.OrbCount;i++){Vector2 p=Player.Position+Vector2.FromAngle((float)Time.GetTicksMsec()/650f+i*Mathf.Tau/Player.Stats.OrbCount)*30;var e=G.Enemies.Nearest(p,12);if(e!=null)G.Weapons.Hit(e,Damage*.35f,Current.Element,p);}
@@ -49,7 +50,7 @@ public partial class WeaponSystem : Node2D
             case WeaponKind.Blade:
                 G.Weapons.Arc(Player.Position,aim,54*s.Range*s.Area,damage,Current.Element,1.8f);G.Audio.Play("blade");break;
             case WeaponKind.Gauntlets:
-                G.Weapons.Arc(Player.Position,aim,40*s.Range,damage,Current.Element,1.4f);Player.Velocity+=aim*45;G.Audio.Play("blade");break;
+                G.Weapons.Arc(Player.Position,aim,40*s.Range,damage,Current.Element,1.4f);G.Effects.Impact(start+aim*12,Current.Element,.85f,aim,false);Player.Velocity+=aim*45;G.Audio.Play("blade");break;
             case WeaponKind.Staff:
                 G.Projectiles.Spawn(start,aim*data.Speed,damage,Current.Element,false,range/data.Speed,s.Pierce,3,5);G.Audio.Play("cast");break;
             case WeaponKind.Chakram:
@@ -59,14 +60,14 @@ public partial class WeaponSystem : Node2D
             default:
                 int n=1+s.ExtraProjectiles+(data.Kind==WeaponKind.Orbs?Mathf.Max(0,s.OrbCount-2):0);
                 for(int i=0;i<n;i++)
-                {var dir=aim.Rotated((i-(n-1)/2f)*.13f);G.Projectiles.Spawn(start,dir*data.Speed,damage,Current.Element,false,range/data.Speed,s.Pierce+(data.Kind==WeaponKind.Bow?(charged>1.5f?2:1):0),data.Kind==WeaponKind.Bow?1:0,data.Kind==WeaponKind.Orbs?4:3,s.ReturnShots);}
+                {var dir=aim.Rotated((i-(n-1)/2f)*.13f);G.Projectiles.Spawn(start,dir*data.Speed,damage,Current.Element,false,range/data.Speed,s.Pierce+(data.Kind==WeaponKind.Bow?(charged>1.5f?2:1):0),data.Kind==WeaponKind.Bow?1:data.Kind==WeaponKind.Orbs?5:0,data.Kind==WeaponKind.Orbs?4:3,s.ReturnShots);}
                 G.Audio.Play(data.Kind==WeaponKind.Bow?"bow":"shoot");break;
         }
-        G.Effects.Burst(start,Palette.ElementColor(Current.Element),4);
+        G.Effects.Cast(start,Current.Element,aim,data.Kind is WeaponKind.Staff or WeaponKind.Blade||charged>1.8f);
     }
     public void Secondary(Vector2 aim)
     {
-        if(AbilityTimer>0)return;AbilityTimer=Current.Data.AbilityCooldown;float d=Damage;Vector2 pos=Player.Position;var s=Player.Stats;
+        if(AbilityTimer>0)return;AbilityDuration=Current.Data.AbilityCooldown;AbilityTimer=AbilityDuration;float d=Damage;Vector2 pos=Player.Position;var s=Player.Stats;
         switch(Current.Data.Kind)
         {
             case WeaponKind.Wand:for(int i=0;i<14;i++)G.Projectiles.Spawn(pos,Vector2.FromAngle(i*Mathf.Tau/14)*250,d*.9f,Current.Element,false,1.2f,s.Pierce);break;
@@ -78,13 +79,15 @@ public partial class WeaponSystem : Node2D
             case WeaponKind.Spellbook:Player.Stats.Shield+=18;G.Weapons.Zone(pos,95*s.Area,5*s.Duration,d*.6f,Current.Element);break;
             case WeaponKind.Gauntlets:Player.Invincible=.8f;Player.Velocity=aim*450;G.Weapons.Arc(pos,aim,140*s.Range,d*2,Current.Element,1);G.Effects.Line(pos,pos+aim*140,Palette.ElementColor(Current.Element),.35f);break;
         }
-        Player.Avatar.Attack=1;G.Audio.Play("cast");G.Camera.Shake(2);
+        Player.Avatar.Attack=1;G.Effects.Cast(pos+new Vector2(0,-10),Current.Element,aim,true);G.Audio.Play("cast");G.Camera.Shake(2);
     }
     public override void _Draw()
     {
         if(Current==null)return;
         if(Current.Data.Kind==WeaponKind.Orbs)
-        {for(int i=0;i<Player.Stats.OrbCount;i++){var p=Vector2.FromAngle((float)Time.GetTicksMsec()/650f+i*Mathf.Tau/Player.Stats.OrbCount)*30+new Vector2(0,-10);DrawRect(new Rect2(p-new Vector2(3,3),6,6),Palette.ElementColor(Current.Element));DrawRect(new Rect2(p-new Vector2(1,1),2,2),Palette.Paper);}}
-        if(Charge>0){DrawArc(new Vector2(0,-13),18,-Mathf.Pi/2,-Mathf.Pi/2+Mathf.Tau*Charge/1.2f,24,Palette.Gold,2);}
+        {for(int i=0;i<Player.Stats.OrbCount;i++){float age=(float)Time.GetTicksMsec()/1000f;var p=Vector2.FromAngle(age*1000/650f+i*Mathf.Tau/Player.Stats.OrbCount)*30+new Vector2(0,-10);VfxSprites.Bolt(this,p,Vector2.Right,Current.Element,5,age+i*.1f);}}
+        if(Current.Data.Kind==WeaponKind.Spellbook)
+        {VfxSprites.Field(this,new Vector2(0,-4),22,Current.Element,(float)Time.GetTicksMsec()/1000f,.45f);DrawTextureRect(Art.Weapon(WeaponKind.Spellbook),new Rect2(-25,-29+Mathf.Sin((float)Time.GetTicksMsec()/700f)*2,18,18),false);}
+        if(Charge>0){DrawArc(new Vector2(0,-13),18,-Mathf.Pi/2,-Mathf.Pi/2+Mathf.Tau*Charge/1.2f,24,Palette.Gold,2);VfxSprites.Bolt(this,Player.Aim*19+new Vector2(0,-11),Player.Aim,Current.Element,1,0,false,.7f);}
     }
 }

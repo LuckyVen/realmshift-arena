@@ -20,4 +20,5 @@ public static class Art
         if(!Textures.TryGetValue(path,out var tex)) Textures[path]=tex=GD.Load<Texture2D>("res://Assets/Art/"+path);
         return tex;
     }
+    public static Texture2D Weapon(WeaponKind kind)=>Get($"Weapons/Polished/weapon_{(int)kind}.svg");
 }

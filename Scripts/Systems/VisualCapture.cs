@@ -28,7 +28,7 @@ public partial class VisualCapture : Node
             case 8:G.Level.SkipTo(40);G.Player!.Weapons.Equip(0,0,Element.Lightning,0);break;
             case 9:Input.ActionRelease("attack");G.Enemies.Boss!.Damage(999999,Element.Arcane);break;
             case 10:G.ReturnToMenu();G.UI.ShowArmory(5);break;case 11:G.UI.ShowSettings(G.UI.ShowMenu);break;
-            default:GetTree().Quit();break;
+            default:SetProcess(false);G.Quit();break;
         }
     }
 }

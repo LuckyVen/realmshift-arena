@@ -5,6 +5,7 @@ public partial class PlayerController : CharacterBody2D
     public PlayerStats Stats {get;private set;}=new();
     public AvatarRenderer Avatar {get;private set;}=null!;
     public WeaponSystem Weapons {get;private set;}=null!;
+    public HeroReadiness Readiness {get;private set;}=null!;
     public Vector2 Aim {get;private set;}=Vector2.Right;
     public float DashTimer {get;private set;}
     public float DashRecharge {get;private set;}
@@ -19,7 +20,8 @@ public partial class PlayerController : CharacterBody2D
     public override void _Ready()
     {
         Avatar=GetNode<AvatarRenderer>("Avatar");Avatar.Config=SaveManager.Data.Avatar.Copy();Weapons=new WeaponSystem{Name="WeaponSystem",Player=this};AddChild(Weapons);
-        ZIndex=15;TextureFilter=TextureFilterEnum.Nearest;
+        Readiness=new HeroReadiness{Name="HeroReadiness",Player=this};AddChild(Readiness);
+        ZIndex=0;TextureFilter=TextureFilterEnum.Nearest;
     }
     public override void _PhysicsProcess(double delta)
     {
@@ -33,9 +35,9 @@ public partial class PlayerController : CharacterBody2D
         {var e=g.Enemies.Nearest(Position,420);Aim=e!=null?(e.Position-Position).Normalized():_lastMove;}
         else Aim=(GetGlobalMousePosition()-Position-new Vector2(0,-12)).Normalized();
         if(Input.IsActionJustPressed("dash")&&Charges>0)
-        {Charges--;DashRecharge=Stats.DashCooldown;DashTimer=.17f*Stats.DashLength;_dashDir=move.LengthSquared()>.02f?move.Normalized():Aim;Invincible=.24f;g.Audio.Play("dash");g.Effects.Burst(Position,Palette.Teal,12);}
+        {Charges--;DashRecharge=Stats.DashCooldown;DashTimer=.17f*Stats.DashLength;_dashDir=move.LengthSquared()>.02f?move.Normalized():Aim;Invincible=.24f;g.Audio.Play("dash");g.Effects.Dash(Position,_dashDir,Weapons.Current.Element);}
         if(DashTimer>0)
-        {DashTimer-=dt;Velocity=_dashDir*460;_afterimage-=dt;if(_afterimage<=0){_afterimage=.025f;g.Effects.Ghost(Position,Avatar.Config,Avatar.Facing);}}
+        {DashTimer-=dt;Velocity=_dashDir*460;_afterimage-=dt;if(_afterimage<=0){_afterimage=.035f;g.Effects.Ghost(Position,Avatar.Config,Avatar.Facing);}if(DashTimer<=0)g.Effects.Dash(Position,_dashDir,Weapons.Current.Element,true);}
         else Velocity=Velocity.MoveToward(move*Stats.MoveSpeed*(Haste>0?1.45f:1),dt*(move==Vector2.Zero?1900:1600));
         MoveAndSlide();Position=Position.Clamp(new Vector2(24,24),WorldManager.Size-new Vector2(24,24));
         if(Input.IsActionPressed("attack"))Weapons.Primary(dt,Aim);else Weapons.Release(Aim);
@@ -78,6 +80,6 @@ public partial class PlayerController : CharacterBody2D
         DrawSetTransform(new Vector2(0,-1),0,new Vector2(1,.35f));DrawCircle(Vector2.Zero,9,new Color(0,0,0,.28f));DrawSetTransform(Vector2.Zero);
         if(Stats.Shield>0)DrawArc(new Vector2(0,-12),17,0,Mathf.Tau,24,new Color(Palette.Teal,.7f),1);
         if(Weapons!=null&&!Dead&&Weapons.Current.Data.Kind!=WeaponKind.Orbs&&Weapons.Current.Data.Kind!=WeaponKind.Spellbook)
-        {DrawSetTransform(new Vector2(0,-11)+Aim*10,Aim.Angle()+Mathf.Pi/4+Avatar.Attack*.6f);DrawTexture(Art.Get($"Weapons/weapon_{(int)Weapons.Current.Data.Kind}.png"),new Vector2(-12,-12),new Color(1,1,1,.92f));DrawSetTransform(Vector2.Zero);}
+        {DrawSetTransform(new Vector2(0,-11)+Aim*10,Aim.Angle()+Mathf.Pi/4+Avatar.Attack*.6f);DrawTextureRect(Art.Weapon(Weapons.Current.Data.Kind),new Rect2(-12,-12,24,24),false,new Color(1,1,1,.92f));DrawSetTransform(Vector2.Zero);}
     }
 }

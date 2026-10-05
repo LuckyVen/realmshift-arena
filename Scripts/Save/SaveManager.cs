@@ -60,7 +60,7 @@ public sealed class SaveData
 public static class SaveManager
 {
     public static SaveData Data {get;private set;}=new();
-    public static string Path=>ProjectSettings.GlobalizePath(System.Array.Exists(OS.GetCmdlineUserArgs(),x=>x.StartsWith("--smoke")||x.StartsWith("--capture="))?"user://smoke-save.json":"user://realmshift-save.json");
+    public static string Path=>ProjectSettings.GlobalizePath(System.Array.Exists(OS.GetCmdlineUserArgs(),x=>x.StartsWith("--smoke")||x.StartsWith("--capture=")||x.StartsWith("--polish-"))?"user://smoke-save.json":"user://realmshift-save.json");
     public static string? Warning {get;private set;}
     public static void Load()
     {

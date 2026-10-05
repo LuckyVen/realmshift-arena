@@ -5,6 +5,3 @@ obj/
 *.suo
 .vscode/
 __pycache__/
-
-# Backup files
-*.old

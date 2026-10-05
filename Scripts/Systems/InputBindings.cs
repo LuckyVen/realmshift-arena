@@ -22,5 +22,9 @@ public static class InputBindings
         if(duplicate!=null)SaveManager.Data.Settings.Keys[duplicate]=SaveManager.Data.Settings.Keys.GetValueOrDefault(action,(long)Defaults[action]);
         SaveManager.Data.Settings.Keys[action]=(long)key;Setup();SaveManager.Save();
     }
-    public static string Label(string action)=>OS.GetKeycodeString((Key)SaveManager.Data.Settings.Keys.GetValueOrDefault(action,(long)Defaults[action]));
+    public static string Label(string action)
+    {
+        if(action=="attack")return "LMB";if(action=="secondary")return "RMB";
+        return Defaults.TryGetValue(action,out var fallback)?OS.GetKeycodeString((Key)SaveManager.Data.Settings.Keys.GetValueOrDefault(action,(long)fallback)):action.ToUpperInvariant();
+    }
 }

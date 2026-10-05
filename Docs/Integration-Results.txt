@@ -1,38 +1,122 @@
-Godot 4.5.1 .NET / exported Linux x64 package
+REALMSHIFT ARENA 1.2 / FINAL VALIDATION
+Date: 2026-10-04 (UTC)
+Engine: official Godot 4.5.1 .NET
+SDK: .NET 8.0.408 / net8.0
+
+C# source build: succeeded; 0 warnings; 0 errors.
+Source integration: SMOKE PASS / 83 integration checks.
+Packaged Linux release integration:
+PASS / legacy version-1 profile preserves progression and settings
 PASS / eight weapon resources
 PASS / 28 enemy variants
 PASS / 50+ upgrade resources
 PASS / eight heroes
 PASS / all menu pages construct
 PASS / save roundtrip
+PASS / forest dressing is present and bounded
+PASS / foliage leaves paths and collisions clear
+PASS / radar keeps east to the right of the player
+PASS / offscreen objective fits inside the circular radar
+PASS / movement responds to input
+PASS / dash grants invulnerability and starts its motion
+PASS / dash visual feedback spawns
+PASS / hero aura starts ready
+PASS / casting hero skill clears readiness during cooldown
 PASS / projectiles damage and defeat enemies
 PASS / projectile pool bounded
 PASS / pause freezes enemy simulation
 PASS / XP freezes the run for upgrade choice
 PASS / three upgrade choices
 PASS / scheduled guardian 0
+PASS / guardian 0 has increased durability
+PASS / guardian 0 has bounded damage resistance
+PASS / guardian 0 escalates pressure with recovery time
 PASS / boss phase transition
 PASS / boss victory triggers world shift
 PASS / world geometry and portal transition
 PASS / portal advances campaign
 PASS / scheduled guardian 1
+PASS / guardian 1 has increased durability
+PASS / guardian 1 has bounded damage resistance
+PASS / guardian 1 escalates pressure with recovery time
 PASS / boss phase transition
 PASS / boss victory triggers world shift
 PASS / world geometry and portal transition
 PASS / portal advances campaign
 PASS / scheduled guardian 2
+PASS / guardian 2 has increased durability
+PASS / guardian 2 has bounded damage resistance
+PASS / guardian 2 escalates pressure with recovery time
 PASS / boss phase transition
 PASS / boss victory triggers world shift
 PASS / world geometry and portal transition
 PASS / portal advances campaign
 PASS / scheduled guardian 3
+PASS / guardian 3 has increased durability
+PASS / guardian 3 has bounded damage resistance
+PASS / guardian 3 escalates pressure with recovery time
 PASS / boss phase transition
 PASS / boss victory triggers world shift
 PASS / level 40 victory unlocks endless
 PASS / endless starts beyond campaign
-PASS / eight weapon classes execute
+PASS / Wand redesigned icon imports
+PASS / Wand primary produces its attack
+PASS / Wand secondary executes
+PASS / Bow redesigned icon imports
+PASS / Bow primary produces its attack
+PASS / Bow secondary executes
+PASS / Blade redesigned icon imports
+PASS / Blade primary produces its attack
+PASS / Blade secondary executes
+PASS / Staff redesigned icon imports
+PASS / Staff primary produces its attack
+PASS / Staff secondary executes
+PASS / Chakram redesigned icon imports
+PASS / Chakram primary produces its attack
+PASS / Chakram secondary executes
+PASS / Orbs redesigned icon imports
+PASS / Orbs primary produces its attack
+PASS / Orbs secondary executes
+PASS / Spellbook redesigned icon imports
+PASS / Spellbook primary produces its attack
+PASS / Spellbook secondary executes
+PASS / Gauntlets redesigned icon imports
+PASS / Gauntlets primary produces its attack
+PASS / Gauntlets secondary executes
+PASS / unlocked hotbar switches to its secondary slot
+PASS / locked hotbar refuses secondary slot
+PASS / effect pool saturates at its fixed capacity
+PASS / player uses shared scenery depth sorting
+PASS / all burst effects expire and return to the pool
 PASS / return to menu clears run
-SMOKE PASS / 33 integration checks
+SMOKE PASS / 83 integration checks
 
-Windows x64 export: succeeded with no export errors.
-Native Windows runtime test: not performed in this environment.
+Windows x64 release export: succeeded; no export warnings/errors.
+Linux x64 QA release export: succeeded; no export warnings/errors.
+Windows package includes EXE, PCK and the self-contained .NET runtime.
+
+Packaged visual QA: POLISH FINISHED / 515 structural checks / 52 screens.
+Actual PNG viewports verified: 640x360, 1280x720, 1920x1080.
+Rendered scenes include all major menus/dialogs; trees behind/front/side;
+five elements; eight weapons; four boss warnings; Realm Shift;
+active/locked equipment; hero/weapon ready and cooldown states;
+live red enemy markers; health/shield loss; four foliage palettes;
+Low VFX and Reduced Flash settings.
+Final new HUD, foliage, boss and preview screenshots were visually inspected.
+300 captured frames form a 10-second silent, 30-fps combat preview.
+Preview uses invulnerability and durable targets in an isolated QA profile.
+The final showcase assertion confirms live gameplay at its end.
+
+115 gameplay .tres files compared with the supplied source: byte-identical.
+Boss changes are isolated in BossTuning.cs and BossBase.cs.
+Eight original weapon SVGs, nine HUD SVGs and 24 three-pose foliage SVGs.
+Prior 36 animated elemental VFX sprite sheets and depth polish retained.
+Legacy version-1 profile compatibility and save roundtrip: passed.
+All QA flags use an isolated save profile; no QA save is shipped.
+
+Environment limitation: Xvfb/Mesa cannot enable VSync; one driver warning
+appears at startup during image capture. No repeating game errors, build
+errors, export errors or shutdown errors were observed.
+Native Windows runtime, controller/driver behavior and hardware FPS were
+not tested in this Linux environment; see Docs/Testing.md for those checks.
+Human boss balance requires normal playthroughs with representative builds.

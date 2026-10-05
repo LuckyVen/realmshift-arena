@@ -30,7 +30,7 @@ public partial class EnemyBase : CharacterBody2D
         MaxHealth=data.Health*_levelScale*(miniboss?5:elite?2.1f:1);Health=MaxHealth;
         Modifier=elite?(int)(GD.Randi()%7):-1;_eliteTimer=3;
         Active=true;Visible=true;SetPhysicsProcess(true);_shape.SetDeferred(CollisionShape2D.PropertyName.Disabled,false);
-        Burn=Slow=Root=Stun=Age=Flash=Windup=_burnTick=_contact=0;Cooldown=GD.Randf()*1.8f;Scale=Vector2.One*(miniboss?1.6f:elite?1.18f:1);ZIndex=15;
+        Burn=Slow=Root=Stun=Age=Flash=Windup=_burnTick=_contact=0;Cooldown=GD.Randf()*1.8f;Scale=Vector2.One*(miniboss?1.6f:elite?1.18f:1);ZIndex=0;
         SaveManager.Data.SeenEnemies.Add(data.Realm*7+(int)data.Kind);GameManager.Instance.Effects.Burst(position,Palette.Realm(data.Realm),8);
     }
     public void Deactivate(){Active=false;Visible=false;SetPhysicsProcess(false);if(_shape!=null)_shape.SetDeferred(CollisionShape2D.PropertyName.Disabled,true);}
@@ -53,7 +53,7 @@ public partial class EnemyBase : CharacterBody2D
                 if(Windup>0)
                 {Windup-=dt;Velocity=Vector2.Zero;if(Windup<=0){Cooldown=-.4f;Velocity=RushDirection*210;}}
                 else if(Cooldown<0&&Cooldown>-.4f)Velocity=RushDirection*210;
-                else if(Cooldown<=-.4f){Cooldown=2.9f;Windup=.65f;RushDirection=direction;g.Effects.Line(Position,Position+direction*135,Palette.Realm(Data.Realm),.65f);Velocity=Vector2.Zero;}
+                else if(Cooldown<=-.4f){Cooldown=2.9f;Windup=.65f;RushDirection=direction;g.Effects.Trajectory(Position,Position+direction*135,.65f);Velocity=Vector2.Zero;}
                 else Velocity=direction*speed;
                 break;
             case EnemyKind.Support:
@@ -80,7 +80,7 @@ public partial class EnemyBase : CharacterBody2D
         if(apply)
         {switch(element){case Element.Fire:Burn=2.5f*g.Player!.Stats.ElementPower;break;case Element.Frost:Slow=2.5f*g.Player!.Stats.ElementPower;break;case Element.Nature:Root=(IsBoss?.18f:.7f)*g.Player!.Stats.ElementPower;break;case Element.Lightning:Stun=IsBoss?0:.15f;break;}}
         if(g.Settings.Numbers)g.Effects.Number(Position-new Vector2(0,14),(int)amount,critical?Palette.Gold:Palette.Paper);
-        g.Effects.Burst(Position-new Vector2(0,12),Palette.ElementColor(element),critical?7:3);
+        g.Effects.Impact(Position-new Vector2(0,12),element,critical?1.45f:amount>45?1.4f:.8f,null,apply);
         if(Health<=0)Die();
     }
     protected virtual void Die()
@@ -92,10 +92,12 @@ public partial class EnemyBase : CharacterBody2D
     {
         if(!Active||Data==null)return;
         var color=Flash>0?new Color(1.7f,1.7f,1.7f):Colors.White;
-        if(Elite){DrawArc(new Vector2(0,-12),18,0,Mathf.Tau,24,Modifier is >=0 and <4?Palette.ElementColor((Element)(Modifier==0?0:Modifier==2?1:Modifier==1?2:4)):Palette.Gold,1);color=new Color(1.15f,1.08f,.9f);}
+        if(Elite){DrawArc(new Vector2(0,-12),18,0,Mathf.Tau,24,Modifier is >=0 and <4?Palette.ElementColor((Element)(Modifier==0?0:Modifier==2?1:Modifier==1?2:4)):Palette.Gold,1);if(Flash<=0)color=new Color(1.15f,1.08f,.9f);}
         DrawTextureRectRegion(Art.Get($"Enemies/enemy_{Data.Realm}_{(int)Data.Kind}.png"),new Rect2(-16,-29,32,32),new Rect2(((int)(Age*7)%4)*32,0,32,32),color);
         if(Health<MaxHealth){DrawRect(new Rect2(-12,-33,24,2),Palette.Ink);DrawRect(new Rect2(-12,-33,24*Health/MaxHealth,2),Elite?Palette.Gold:Palette.Teal);}
-        if(Burn>0)DrawRect(new Rect2(-1,-32,2,3),Palette.ElementColor(Element.Fire));
-        if(Root>0)DrawArc(new Vector2(0,-2),12,0,Mathf.Tau,12,Palette.ElementColor(Element.Nature),1);
+        if(Burn>0)for(int i=0;i<3;i++)VfxSprites.Frame(this,"Particles/fire",new Vector2(i*6-6,-22-Mathf.PosMod(Age*12+i*5,13)),8,8,4,(Age*16+i)%4,.7f);
+        if(Slow>0)VfxSprites.Frame(this,"Particles/frost",new Vector2(0,-34),8,8,4,(Age*9)%4,.9f);
+        if(Root>0)VfxSprites.Field(this,new Vector2(0,-1),12,Element.Nature,Age,.9f);
+        if(Stun>0)VfxSprites.Frame(this,"Projectiles/lightning",new Vector2(0,-32),24,24,8,(Age*22)%8,.65f);
     }
 }

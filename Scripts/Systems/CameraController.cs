@@ -12,6 +12,6 @@ public partial class CameraController : Camera2D
         var point=Focus??(Target!=null?Target.Position+Target.Aim*24:WorldManager.Size/2);
         Position=Position.Lerp(point,1-Mathf.Exp(-(float)delta*8));
         Position=Position.Clamp(new Vector2(320,180),WorldManager.Size-new Vector2(320,180));
-        _shake=Mathf.Max(0,_shake-(float)delta*16);Offset=new Vector2(GD.Randf()-.5f,GD.Randf()-.5f)*_shake;
+        _shake=Mathf.Max(0,_shake-(float)delta*16);Offset=SaveManager.Data.Settings.Shake?(new Vector2(GD.Randf()-.5f,GD.Randf()-.5f)*_shake).Round():Vector2.Zero;
     }
 }

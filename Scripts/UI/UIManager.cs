@@ -26,13 +26,14 @@ public partial class UIManager : CanvasLayer
     {
         Layer=50;_root=new Control{Name="Root",Size=new(640,360),MouseFilter=Control.MouseFilterEnum.Ignore};AddChild(_root);
         _hud=new HUDController();_root.AddChild(_hud);_hud.Visible=false;
+        _root.AddChild(new RealmShiftOverlay());
         _hurt=new ColorRect{Size=new(640,360),Color=new Color(.7f,.05f,.08f,0),MouseFilter=Control.MouseFilterEnum.Ignore};_root.AddChild(_hurt);
         _announce=UIFactory.Text(_root,"",110,110,420,29,16,Palette.Gold);_announce.HorizontalAlignment=HorizontalAlignment.Center;
         _sub=UIFactory.Text(_root,"",95,143,450,48,10,Palette.Paper,true);_sub.HorizontalAlignment=HorizontalAlignment.Center;
         _editing=SaveManager.Data.Avatar.Copy();
     }
     public void Close()
-    {if(_page!=null){_root.RemoveChild(_page);_page.QueueFree();_page=null!;}_intro=false;_binding=null;}
+    {if(_page!=null){_root.RemoveChild(_page);_page.QueueFree();_page=null!;}_intro=false;_binding=null;if(_hud!=null)_hud.Visible=G.Player!=null;}
     public void ShowHud(bool show){_hud.Visible=show;}
     public void Announce(string title,string subtitle,float seconds=3){_announce.Text=title;_sub.Text=subtitle;_announceTime=seconds;}
     public void HurtFlash(){if(!G.Settings.ReducedFlash)_hurt.Color=new Color(.55f,.06f,.08f,.16f);}
@@ -47,7 +48,7 @@ public partial class UIManager : CanvasLayer
     {if(_binding!=null&&e is InputEventKey {Pressed:true,Echo:false} key){InputBindings.Rebind(_binding,key.PhysicalKeycode);_binding=null;_captureGuard=.2f;_rebindRefresh?.Invoke();GetViewport().SetInputAsHandled();}}
     private Control Page(string title,Action? back=null)
     {
-        Close();_page=new Control{Name="Page",Size=new(640,360),MouseFilter=Control.MouseFilterEnum.Stop};_root.AddChild(_page);_page.AddChild(new MenuBackdrop());
+        Close();_hud.Visible=false;_page=new Control{Name="Page",Size=new(640,360),MouseFilter=Control.MouseFilterEnum.Stop};_root.AddChild(_page);_page.AddChild(new MenuBackdrop());
         if(title.Length>0){UIFactory.Text(_page,title,24,15,448,25,17,Palette.Gold);UIFactory.Text(_page,"REALMSHIFT / "+SaveManager.Data.Shards+" REALM SHARDS",25,39,450,13,9,Palette.Muted);}
         if(back!=null)UIFactory.Button(_page,"BACK",538,17,78,26,back);
         return _page;
@@ -64,11 +65,11 @@ public partial class UIManager : CanvasLayer
         var start=UIFactory.Button(_page,"START  /  ENTER THE REALM",45,138,215,32,()=>{_endless=false;ShowCharacters();},true);start.GrabFocus();
         UIFactory.Button(_page,"CHARACTERS",45,180,174,23,ShowCharacters);UIFactory.Button(_page,"ARMORY",45,207,174,23,()=>ShowArmory(0));
         UIFactory.Button(_page,"COLLECTION",45,234,174,23,()=>ShowCollection("REALMS"));UIFactory.Button(_page,"SETTINGS",45,261,174,23,()=>ShowSettings(ShowMenu));
-        UIFactory.Button(_page,"CREDITS",45,288,84,23,ShowCredits);UIFactory.Button(_page,"EXIT",135,288,84,23,()=>{SaveManager.Save();GetTree().Quit();});
-        Avatar(_page,SaveManager.Data.Avatar,new Vector2(456,253),4.4f);
+        UIFactory.Button(_page,"CREDITS",45,288,84,23,ShowCredits);UIFactory.Button(_page,"EXIT",135,288,84,23,G.Quit);
+        Avatar(_page,SaveManager.Data.Avatar,new Vector2(456,262),3.5f);
         UIFactory.Text(_page,"YOUR NEXT JOURNEY",368,135,226,18,11,Palette.Gold);UIFactory.Text(_page,"Best level  "+SaveManager.Data.BestLevel+"   /   Best score  "+SaveManager.Data.BestScore,325,282,280,15,9,Palette.Muted);
         if(SaveManager.Data.Endless)UIFactory.Button(_page,"REALM COLLAPSE / ENDLESS",334,308,262,27,()=>{_endless=true;ShowCharacters();});else UIFactory.Text(_page,"Defeat the Realmbreaker to unlock endless.",327,310,284,24,9,Palette.Muted,true);
-        UIFactory.Text(_page,"v1.0  /  ORIGINAL CAMPAIGN BUILD",25,341,450,14,8,Palette.Muted);
+        UIFactory.Text(_page,"v1.2  /  WILDS & WARDENS",25,341,450,14,8,Palette.Muted);
         if(SaveManager.Warning!=null)UIFactory.Text(_page,SaveManager.Warning,280,40,327,36,9,new Color("ee8e9c"),true);
     }
     private void Avatar(Control parent,AvatarConfig config,Vector2 pos,float scale)
@@ -121,14 +122,14 @@ public partial class UIManager : CanvasLayer
     public void ShowLoadout()
     {
         Page(_endless?"REALM COLLAPSE / LOADOUT":"PREPARE YOUR LOADOUT",ShowCharacters);UIFactory.Panel(_page,23,64,193,225);Avatar(_page,_editing,new Vector2(120,212),4);UIFactory.Text(_page,Catalog.Heroes[_editing.Hero].DisplayName,38,79,160,21,13,Palette.Gold);
-        UIFactory.Button(_page,"PRIMARY",244,66,175,25,()=>{_loadoutSlot=0;ShowLoadout();},_loadoutSlot==0);
-        var sec=UIFactory.Button(_page,SaveManager.Data.Bosses.Count>0?"SECONDARY":"SLOT 2 / BOSS 1",431,66,185,25,()=>{_loadoutSlot=1;ShowLoadout();},_loadoutSlot==1);sec.Disabled=SaveManager.Data.Bosses.Count==0;
+        UIFactory.Button(_page,"PRIMARY",244,66,174,28,()=>{_loadoutSlot=0;ShowLoadout();},_loadoutSlot==0);
+        var sec=UIFactory.Button(_page,SaveManager.Data.Bosses.Count>0?"SECONDARY":"SLOT 2 / BOSS 1",432,66,174,28,()=>{_loadoutSlot=1;ShowLoadout();},_loadoutSlot==1);sec.Disabled=SaveManager.Data.Bosses.Count==0;
         for(int i=0;i<8;i++)
         {
             int id=i;bool unlocked=SaveManager.Data.Weapons.Contains(i);float x=244+(i%2)*188,y=101+i/2*33;
             var b=UIFactory.Button(_page,unlocked?Catalog.Weapons[i].DisplayName:"??? / GUARDIAN "+(Catalog.Weapons[i].UnlockBoss+1),x,y,174,28,()=>{if(_loadoutSlot==0)StartWeapon=id;else SecondWeapon=id;ShowLoadout();},(_loadoutSlot==0?StartWeapon:SecondWeapon)==i);b.Disabled=!unlocked;
         }
-        int selected=_loadoutSlot==0?StartWeapon:SecondWeapon;UIFactory.Text(_page,Catalog.Weapons[selected].Description,244,239,369,43,9,Palette.Muted,true);
+        int selected=_loadoutSlot==0?StartWeapon:SecondWeapon;UIFactory.Text(_page,Catalog.Weapons[selected].Description,244,239,369,43,10,Palette.Muted,true);
         UIFactory.Text(_page,"ELEMENT",25,299,92,20,9,Palette.Muted);
         for(int i=0;i<5;i++){int e=i;var b=UIFactory.Button(_page,((Element)i).ToString().ToUpper(),114+i*102,294,95,24,()=>{StartElement=(Element)e;ShowLoadout();},(int)StartElement==e);b.AddThemeColorOverride("font_color",Palette.ElementColor((Element)i));}
         UIFactory.Text(_page,"WASD / MOVE   SPACE / DASH   LMB / ATTACK",25,335,386,17,9,Palette.Muted);
@@ -138,7 +139,7 @@ public partial class UIManager : CanvasLayer
     {
         _armory=id;Page("THE ARMORY",ShowMenu);UIFactory.Panel(_page,22,64,196,280);UIFactory.Panel(_page,234,64,383,280);
         for(int i=0;i<8;i++){int n=i;bool unlocked=SaveManager.Data.Weapons.Contains(i);UIFactory.Button(_page,unlocked?Catalog.Weapons[i].DisplayName:"UNKNOWN RELIC",33,77+i*32,174,26,()=>ShowArmory(n),i==id);}
-        var weapon=Catalog.Weapons[id];bool known=SaveManager.Data.Weapons.Contains(id);UIFactory.Icon(_page,Art.Get($"Weapons/weapon_{id}.png"),256,83,72,known?Colors.White:new Color(0,0,0,.8f));
+        var weapon=Catalog.Weapons[id];bool known=SaveManager.Data.Weapons.Contains(id);UIFactory.Icon(_page,Art.Weapon((WeaponKind)id),256,83,72,known?Colors.White:new Color(0,0,0,.8f));
         UIFactory.Text(_page,known?weapon.DisplayName:"UNDISCOVERED WEAPON",342,86,255,26,14,Palette.Gold);UIFactory.Text(_page,known?"CLASS / "+weapon.Kind.ToString().ToUpper():"GUARDIAN "+(weapon.UnlockBoss+1)+" REWARD",342,115,256,28,10,Palette.Muted);
         UIFactory.Text(_page,known?weapon.Description:"Defeat the guardian to reveal this relic and add it to your starting armory.",257,168,337,55,11,Palette.Paper,true);
         UIFactory.Text(_page,"ELEMENTS / FIRE - FROST - STORM - NATURE - ARCANE",257,232,337,29,9,Palette.Teal,true);
@@ -177,7 +178,7 @@ public partial class UIManager : CanvasLayer
         Page("");UIFactory.Panel(_page,202,54,236,266);UIFactory.Text(_page,"PAUSED",272,76,145,25,18,Palette.Gold);
         UIFactory.Button(_page,"RESUME",220,117,200,27,()=>{Close();G.State=_resume;},true).GrabFocus();
         UIFactory.Button(_page,"SETTINGS",220,150,200,24,()=>ShowSettings(ShowPause));UIFactory.Button(_page,"CONTROLS",220,180,200,24,()=>ShowControls(ShowPause));
-        UIFactory.Button(_page,"RESTART RUN",220,210,200,24,G.Restart);UIFactory.Button(_page,"RETURN TO MENU",220,240,200,24,G.ReturnToMenu);UIFactory.Button(_page,"QUIT GAME",220,270,200,24,()=>{SaveManager.Save();GetTree().Quit();});
+        UIFactory.Button(_page,"RESTART RUN",220,210,200,24,G.Restart);UIFactory.Button(_page,"RETURN TO MENU",220,240,200,24,G.ReturnToMenu);UIFactory.Button(_page,"QUIT GAME",220,270,200,24,G.Quit);
     }
     public void ShowSettings(Action back)
     {
@@ -186,7 +187,7 @@ public partial class UIManager : CanvasLayer
         Toggle("FULLSCREEN",G.Settings.Fullscreen,39,198,v=>{G.Settings.Fullscreen=v;G.ApplySettings();ShowSettings(back);});Toggle("VSYNC",G.Settings.Vsync,39,230,v=>{G.Settings.Vsync=v;G.ApplySettings();ShowSettings(back);});
         UIFactory.Button(_page,"WINDOW / "+((G.Settings.Resolution+1)*640)+"x"+((G.Settings.Resolution+1)*360),39,271,259,25,()=>{G.Settings.Resolution=(G.Settings.Resolution+1)%3;G.ApplySettings();ShowSettings(back);});
         Toggle("SCREEN SHAKE",G.Settings.Shake,331,82,v=>{G.Settings.Shake=v;ShowSettings(back);});Toggle("DAMAGE NUMBERS",G.Settings.Numbers,331,118,v=>{G.Settings.Numbers=v;ShowSettings(back);});Toggle("REDUCED FLASH",G.Settings.ReducedFlash,331,154,v=>{G.Settings.ReducedFlash=v;ShowSettings(back);});Toggle("AUTO AIM",G.Settings.AutoAim,331,190,v=>{G.Settings.AutoAim=v;ShowSettings(back);});
-        UIFactory.Button(_page,"PARTICLES / "+new[]{"LOW","NORMAL","HIGH"}[G.Settings.Particles],331,234,265,25,()=>{G.Settings.Particles=(G.Settings.Particles+1)%3;ShowSettings(back);});UIFactory.Button(_page,"CONTROLS / REBIND KEYS",331,271,265,25,()=>ShowControls(()=>ShowSettings(back)));
+        UIFactory.Button(_page,"VFX QUALITY / "+new[]{"LOW","MEDIUM","HIGH"}[G.Settings.Particles],331,234,265,25,()=>{G.Settings.Particles=(G.Settings.Particles+1)%3;ShowSettings(back);});UIFactory.Button(_page,"CONTROLS / REBIND KEYS",331,271,265,25,()=>ShowControls(()=>ShowSettings(back)));
         UIFactory.Text(_page,"Gamepad: left stick moves, right stick aims. RT/LT attack and weapon skill.",39,310,563,18,8,Palette.Muted);
     }
     private void Slider(string label,float value,float x,float y,Action<float> change)
@@ -202,9 +203,19 @@ public partial class UIManager : CanvasLayer
     public void ShowUpgrades()
     {
         _resume=G.State;G.State=RunState.Upgrade;Page("RANK "+G.Experience.Rank+" / CHOOSE A RELIC");var choices=G.Upgrades.Offer();
+        var row=new HBoxContainer{Position=new(23,88),Size=new(594,218)};row.AddThemeConstantOverride("separation",9);_page.AddChild(row);
         for(int i=0;i<3;i++)
-        {var data=choices[i];float x=23+i*201;UIFactory.Panel(_page,x,90,192,199);UIFactory.Text(_page,data.Weapon>=0?Catalog.Weapons[data.Weapon].Kind.ToString().ToUpper():data.Element>=0?((Element)data.Element).ToString().ToUpper():"TRAVELER RELIC",x+13,107,166,19,9,Palette.Teal);UIFactory.Text(_page,data.DisplayName,x+13,134,165,54,14,Palette.Gold,true);UIFactory.Text(_page,data.Description,x+13,191,165,57,10,Palette.Paper,true);UIFactory.Button(_page,"TAKE RELIC >",x+12,254,167,25,()=>{G.Upgrades.Apply(data);Close();G.State=_resume;G.Experience.TryOffer();},i==0);}
-        UIFactory.Text(_page,"Time is paused. Choose one. Every relic lasts for this run.",139,319,477,20,9,Palette.Muted);
+        {
+            var data=choices[i];var card=new PixelPanel{SizeFlagsHorizontal=Control.SizeFlags.ExpandFill};row.AddChild(card);
+            var margin=new MarginContainer();card.AddChild(margin);margin.SetAnchorsAndOffsetsPreset(Control.LayoutPreset.FullRect);foreach(string side in new[]{"left","right","top","bottom"})margin.AddThemeConstantOverride("margin_"+side,12);
+            var body=new VBoxContainer();body.AddThemeConstantOverride("separation",10);margin.AddChild(body);
+            UIFactory.FlowText(body,data.Weapon>=0?Catalog.Weapons[data.Weapon].Kind.ToString().ToUpper():data.Element>=0?((Element)data.Element).ToString().ToUpper():"TRAVELER RELIC",9,Palette.Teal,18);
+            UIFactory.FlowText(body,data.DisplayName,14,Palette.Gold,46);
+            UIFactory.FlowText(body,data.Description,10,Palette.Paper,52);
+            body.AddChild(new Control{SizeFlagsVertical=Control.SizeFlags.ExpandFill});
+            UIFactory.FlowButton(body,"TAKE RELIC >",()=>{G.Upgrades.Apply(data);Close();G.State=_resume;G.Experience.TryOffer();},i==0);
+        }
+        var note=UIFactory.Text(_page,"Time is paused. Choose one. Every relic lasts for this run.",40,324,560,23,9,Palette.Muted,true);note.HorizontalAlignment=HorizontalAlignment.Center;
     }
     public void ShowCache()
     {
@@ -213,7 +224,7 @@ public partial class UIManager : CanvasLayer
         for(int i=0;i<3;i++)
         {
             int id=choices[i],rarity=(int)(GD.Randi()%6);Element element=(Element)(GD.Randi()%5);float x=23+i*201;
-            UIFactory.Panel(_page,x,86,192,207);UIFactory.Icon(_page,Art.Get($"Weapons/weapon_{id}.png"),x+62,100,62);UIFactory.Text(_page,Catalog.Weapons[id].DisplayName,x+12,169,165,31,12,Palette.Gold,true);UIFactory.Text(_page,new[]{"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC"}[rarity]+" / "+element,x+12,208,165,25,9,Palette.ElementColor(element),true);
+            UIFactory.Panel(_page,x,86,192,207);UIFactory.Icon(_page,Art.Weapon((WeaponKind)id),x+62,100,62);UIFactory.Text(_page,Catalog.Weapons[id].DisplayName,x+12,169,165,31,12,Palette.Gold,true);UIFactory.Text(_page,new[]{"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC"}[rarity]+" / "+element,x+12,208,165,25,9,Palette.ElementColor(element),true);
             UIFactory.Button(_page,"EQUIP / ACTIVE SLOT",x+12,253,168,26,()=>{G.Player!.Weapons.Equip(G.Player.Weapons.Slot,id,element,rarity);G.Audio.Play("level");Close();G.State=_resume;SaveManager.Save();});
         }
         UIFactory.Button(_page,"KEEP LOADOUT / TAKE 8 SHARDS",170,318,304,26,()=>{SaveManager.Data.Shards+=8;G.RunShards+=8;Close();G.State=_resume;});
@@ -225,11 +236,15 @@ public partial class UIManager : CanvasLayer
         UIFactory.Button(_page,"TRY AGAIN",148,263,161,28,G.Restart);UIFactory.Button(_page,"RETURN TO MENU",321,263,170,28,G.ReturnToMenu,true);
         if(victory)UIFactory.Text(_page,"REALM COLLAPSE / ENDLESS IS NOW UNLOCKED",153,299,342,14,8,Palette.Gold);
     }
-    private void ShowCredits()
+    public void ShowCredits()
     {
         Page("CREDITS / REALMSHIFT ARENA",ShowMenu);UIFactory.Panel(_page,23,65,594,278);
-        UIFactory.Text(_page,"A GAME FOR JOHN GABRIEL VENENOSO",43,89,558,31,15,Palette.Gold);
-        UIFactory.Text(_page,"Original characters, pixel assets, realms, bosses, and synthesized music created for this project.\n\nBuilt with Godot 4.5.1 and C# / .NET 8.\n\nArcade arena games inspired the pacing and readability. All game identities, artwork, level layouts, and audio here are original.\n\nSource and asset generation tools are included. See Docs for setup, architecture, testing, and release preparation.",43,133,552,152,11,Palette.Paper,true);
-        UIFactory.Text(_page,"SHATTERED COMPASS / REALMSHIFT ARENA 1.0",43,309,552,20,9,Palette.Teal);
+        var body=UIFactory.Flow(_page,30,73,580,260,true);
+        UIFactory.FlowText(body,"A GAME FOR JOHN GABRIEL VENENOSO",15,Palette.Gold,30);
+        UIFactory.FlowText(body,"Original characters, pixel assets, realms, bosses, and synthesized music created for this project.",11,Palette.Paper,36);
+        UIFactory.FlowText(body,"Built with Godot 4.5.1 and C# / .NET 8.",11,Palette.Paper,24);
+        UIFactory.FlowText(body,"Arcade arena games inspired the pacing and readability. All game identities, artwork, level layouts, and audio here are original.",11,Palette.Paper,40);
+        UIFactory.FlowText(body,"Source and asset generation tools are included. See Docs for setup, architecture, testing, and release preparation.",11,Palette.Paper,40);
+        UIFactory.FlowText(body,"SHATTERED COMPASS / REALMSHIFT ARENA 1.1",9,Palette.Teal,20);
     }
 }
